@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Car Shortlist</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; min-height: 100vh; }
+  .header { background: #0f172a; color: white; padding: 20px 16px 16px; }
+  .header-sub { font-size: 11px; letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header p { margin-top: 6px; font-size: 12px; color: #64748b; }
+  .tabs { display: flex; background: #0f172a; border-top: 1px solid #1e293b; }
+  .tab { flex: 1; padding: 12px 8px; border: none; cursor: pointer; font-size: 13px; background: transparent; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { background: #1e293b; color: #f8fafc; font-weight: 700; border-bottom: 2px solid #3b82f6; }
+  .content { padding: 12px; }
+  .filters { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .filter-btn { padding: 6px 12px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; background: #e2e8f0; color: #475569; transition: all 0.15s; }
+  .filter-btn.active { background: #3b82f6; color: white; }
+  .car-card { background: white; border-radius: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; }
+  .card-inner { padding: 14px 14px 10px; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .brand-name { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .carfax-badge { font-size: 9px; background: #dbeafe; color: #1d4ed8; padding: 1px 6px; border-radius: 10px; font-weight: 700; margin-left: 6px; }
+  .car-model { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .car-location { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+  .status-badge { border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; white-space: nowrap; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .metric { text-align: center; }
+  .metric-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-value { font-size: 12px; font-weight: 700; color: #0f172a; font-family: 'Courier New', monospace; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; }
+  .tag-awd { background: #dcfce7; color: #16a34a; font-weight: 700; }
+  .tag-fwd { background: #f1f5f9; color: #64748b; font-weight: 700; }
+  .tag-risk-low { background: #dcfce7; color: #16a34a; font-weight: 700; }
+  .tag-risk-med { background: #fef3c7; color: #d97706; font-weight: 700; }
+  .tag-over { background: #fee2e2; color: #dc2626; font-weight: 700; }
+  .tag-default { background: #f1f5f9; color: #475569; }
+  .card-note { font-size: 11px; color: #475569; background: #f8fafc; border-radius: 8px; padding: 8px 10px; line-height: 1.5; }
+  .hidden { display: none; }
+  .engine-section { padding: 12px; }
+  .ranking-box { background: #0f172a; border-radius: 14px; padding: 16px; margin-bottom: 12px; color: white; }
+  .rank-sub { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+  .rank-group { margin-bottom: 12px; }
+  .rank-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .rank-item { font-size: 12px; color: #cbd5e1; padding-left: 24px; margin-bottom: 2px; }
+  .engine-card { background: white; border-radius: 14px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .engine-head { padding: 10px 14px 8px; }
+  .engine-head-row { display: flex; justify-content: space-between; align-items: center; }
+  .engine-title { font-size: 14px; font-weight: 700; color: #0f172a; }
+  .engine-name { font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px; }
+  .engine-body { padding: 10px 14px 12px; }
+  .engine-verdict { font-size: 12px; font-weight: 700; color: #16a34a; margin-bottom: 6px; }
+  .engine-pro { font-size: 11px; color: #475569; margin-bottom: 2px; }
+  .engine-con { font-size: 11px; color: #dc2626; margin-bottom: 2px; }
+  .takeaway-box { background: #1e293b; border-radius: 14px; padding: 16px; color: white; margin-top: 4px; }
+  .takeaway-sub { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+  .takeaway-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #334155; }
+  .takeaway-if { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+  .takeaway-goal { font-size: 12px; color: #94a3b8; }
+  .takeaway-answer { font-size: 13px; font-weight: 700; color: #f1f5f9; margin-top: 2px; }
+  .legend { background: white; border-radius: 12px; padding: 14px; margin-top: 4px; }
+  .legend-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .legend-text { font-size: 11px; color: #64748b; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-sub">Ontario Used Car Search</div>
+  <h1>Your Car Shortlist</h1>
+  <p id="stats"></p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('cars')" id="tab-cars">🚗 Cars (12)</button>
+  <button class="tab" onclick="showTab('engines')" id="tab-engines">🔧 Engine Guide</button>
+</div>
+
+<div id="section-cars" class="content">
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCars('all')" id="f-all">All Cars</button>
+    <button class="filter-btn" onclick="filterCars('budget')" id="f-budget">In Budget</button>
+    <button class="filter-btn" onclick="filterCars('awd')" id="f-awd">AWD Only</button>
+    <button class="filter-btn" onclick="filterCars('good')" id="f-good">Worth Checking</button>
+  </div>
+  <div id="car-list"></div>
+  <div class="legend">
+    <div class="legend-title">Status Guide</div>
+    <div class="legend-row"><span class="status-badge" style="background:#dcfce7;color:#16a34a;border:1px solid #16a34a">✓ CLEAN</span><span class="legend-text">Reviewed Carfax — looks solid</span></div>
+    <div class="legend-row"><span class="status-badge" style="background:#fef9c3;color:#a16207;border:1px solid #ca8a04">GET CARFAX</span><span class="legend-text">Need Carfax before deciding</span></div>
+    <div class="legend-row"><span class="status-badge" style="background:#ffedd5;color:#c2410c;border:1px solid #ea580c">CAUTION</span><span class="legend-text">Known concerns — investigate</span></div>
+    <div class="legend-row"><span class="status-badge" style="background:#fee2e2;color:#dc2626;border:1px solid #dc2626">SKIP</span><span class="legend-text">Major issues — avoid</span></div>
+  </div>
+</div>
+
+<div id="section-engines" class="engine-section hidden">
+  <div class="ranking-box">
+    <div class="rank-sub">Overall Reliability Ranking</div>
+    <div class="rank-group">
+      <div class="rank-header"><span>🥇</span><span style="font-size:11px;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:1px">Safest</span></div>
+      <div class="rank-item">→ 2016–17 Accord (2.4L K24)</div>
+      <div class="rank-item">→ 2019 Toyota Camry (2.5L)</div>
+      <div class="rank-item">→ Mazda CX-30/CX-5 (2.5L NA)</div>
+    </div>
+    <div class="rank-group">
+      <div class="rank-header"><span>🟡</span><span style="font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px">Middle</span></div>
+      <div class="rank-item">→ Honda HR-V (1.8L NA)</div>
+      <div class="rank-item">→ Subaru Crosstrek (2.0L)</div>
+    </div>
+    <div class="rank-group">
+      <div class="rank-header"><span>🔴</span><span style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:1px">More Risk</span></div>
+      <div class="rank-item">→ 2018 Accord (1.5T)</div>
+      <div class="rank-item">→ 2017 CR-V (1.5T)</div>
+    </div>
+  </div>
+
+  <div class="engine-card">
+    <div class="engine-head" style="background:#dcfce7;border-bottom:1px solid #16a34a22">
+      <div class="engine-head-row"><div class="engine-title">2016–2017 Accord (9th Gen)</div><span class="status-badge" style="background:#dcfce7;color:#16a34a;border:1px solid #16a34a">LOW RISK</span></div>
+      <div class="engine-name">2.4L K24 — Naturally Aspirated</div>
+    </div>
+    <div class="engine-body">
+      <div class="engine-verdict">"Safest engine on the entire list"</div>
+      <div class="engine-pro">✓ No turbo — bulletproof reliability</div>
+      <div class="engine-pro">✓ Regular CVT fluid changes needed</div>
+      <div class="engine-con">⚠ Minor oil consumption possible</div>
+    </div>
+  </div>
+
+  <div class="engine-card">
+    <div class="engine-head" style="background:#fef3c7;border-bottom:1px solid #d9770622">
+      <div class="engine-head-row"><div class="engine-title">2018 Accord / 2017 CR-V</div><span class="status-badge" style="background:#fef3c7;color:#d97706;border:1px solid #d97706">MED RISK</span></div>
+      <div class="engine-name">1.5L Turbo (L15B7)</div>
+    </div>
+    <div class="engine-body">
+      <div class="engine-verdict">"Modern but needs care"</div>
+      <div class="engine-pro">✓ Better features and tech</div>
+      <div class="engine-con">⚠ Oil dilution in cold weather ← KEY CONCERN</div>
+      <div class="engine-con">⚠ Head gasket risk (less common)</div>
+      <div class="engine-con">⚠ More complex than NA engines</div>
+    </div>
+  </div>
+
+  <div class="engine-card">
+    <div class="engine-head" style="background:#dcfce7;border-bottom:1px solid #16a34a22">
+      <div class="engine-head-row"><div class="engine-title">2022 CX-30 / 2023 CX-5</div><span class="status-badge" style="background:#dcfce7;color:#16a34a;border:1px solid #16a34a">LOW RISK</span></div>
+      <div class="engine-name">2.5L SkyActiv-G — Naturally Aspirated</div>
+    </div>
+    <div class="engine-body">
+      <div class="engine-verdict">"Best modern reliability"</div>
+      <div class="engine-pro">✓ No turbo, regular 87 fuel</div>
+      <div class="engine-pro">✓ Minimal known issues</div>
+      <div class="engine-con">⚠ Minor infotainment glitches</div>
+    </div>
+  </div>
+
+  <div class="engine-card">
+    <div class="engine-head" style="background:#dcfce7;border-bottom:1px solid #16a34a22">
+      <div class="engine-head-row"><div class="engine-title">2019 Toyota Camry</div><span class="status-badge" style="background:#dcfce7;color:#16a34a;border:1px solid #16a34a">LOW RISK</span></div>
+      <div class="engine-name">2.5L Dynamic Force — NA</div>
+    </div>
+    <div class="engine-body">
+      <div class="engine-verdict">"Bulletproof long-term"</div>
+      <div class="engine-pro">✓ Extremely durable, great resale</div>
+      <div class="engine-con">⚠ Fuel pump recall — confirm done</div>
+    </div>
+  </div>
+
+  <div class="engine-card">
+    <div class="engine-head" style="background:#fef3c7;border-bottom:1px solid #d9770622">
+      <div class="engine-head-row"><div class="engine-title">2021 Subaru Crosstrek</div><span class="status-badge" style="background:#fef3c7;color:#d97706;border:1px solid #d97706">MED RISK</span></div>
+      <div class="engine-name">2.0L Boxer</div>
+    </div>
+    <div class="engine-body">
+      <div class="engine-verdict">"Buy for AWD, not reliability"</div>
+      <div class="engine-pro">✓ AWD standard</div>
+      <div class="engine-con">⚠ Oil consumption some units</div>
+      <div class="engine-con">⚠ CVT longevity concern</div>
+    </div>
+  </div>
+
+  <div class="engine-card">
+    <div class="engine-head" style="background:#dcfce7;border-bottom:1px solid #16a34a22">
+      <div class="engine-head-row"><div class="engine-title">2019 Honda HR-V</div><span class="status-badge" style="background:#dcfce7;color:#16a34a;border:1px solid #16a34a">LOW RISK</span></div>
+      <div class="engine-name">1.8L NA</div>
+    </div>
+    <div class="engine-body">
+      <div class="engine-verdict">"Safe but basic"</div>
+      <div class="engine-pro">✓ Reliable, AWD available</div>
+      <div class="engine-con">⚠ Sluggish CVT, road noise</div>
+    </div>
+  </div>
+
+  <div class="takeaway-box">
+    <div class="takeaway-sub">Simple Takeaway</div>
+    <div class="takeaway-item"><div class="takeaway-if">If you want…</div><div class="takeaway-goal">Least problems</div><div class="takeaway-answer">→ 2016–17 Accord (K24) — Clutch #7</div></div>
+    <div class="takeaway-item"><div class="takeaway-if">If you want…</div><div class="takeaway-goal">Modern + safe</div><div class="takeaway-answer">→ Mazda CX-30 2022</div></div>
+    <div class="takeaway-item"><div class="takeaway-if">If you want…</div><div class="takeaway-goal">Reliable + roomy</div><div class="takeaway-answer">→ 2019 Toyota Camry</div></div>
+    <div class="takeaway-item" style="border:none;margin:0;padding:0"><div class="takeaway-if">If you want…</div><div class="takeaway-goal">Newer Accord</div><div class="takeaway-answer">→ Accept 1.5T risk → frequent oil changes</div></div>
+  </div>
+</div>
+
+<script>
+const brandColors = {Honda:"#dc2626",Mazda:"#7c3aed",Toyota:"#16a34a",Subaru:"#2563eb"};
+const STATUS = {
+  good:{label:"✓ CLEAN",bg:"#dcfce7",color:"#16a34a",border:"#16a34a"},
+  check:{label:"GET CARFAX",bg:"#fef9c3",color:"#a16207",border:"#ca8a04"},
+  caution:{label:"CAUTION",bg:"#ffedd5",color:"#c2410c",border:"#ea580c"},
+  skip:{label:"SKIP",bg:"#fee2e2",color:"#dc2626",border:"#dc2626"}
+};
+const cars = [
+  {id:1,brand:"Honda",year:2017,model:"CR-V EX-L",sticker:18990,km:144591,accident:"None",drive:"AWD",risk:"medium",location:"Kitchener Honda",tags:["AWD","Sunroof","Heated Seats"],status:"caution",reviewed:true,budget:true,note:"144k km is very high. Different listing from the CPO CR-V we reviewed at 126k. Verify if same car."},
+  {id:2,brand:"Honda",year:2018,model:"Accord Sport CVT",sticker:19899,km:91236,accident:"Unknown",drive:"FWD",risk:"medium",location:"Golf Automotive",tags:["Sport Trim","CarPlay"],status:"check",reviewed:false,budget:true,note:"Accident status unknown — get Carfax before visiting. 1.5T cold weather concern."},
+  {id:3,brand:"Honda",year:2018,model:"Accord LX",sticker:20994,km:110000,accident:"None",drive:"FWD",risk:"medium",location:"Waterloo Honda",tags:["CarPlay","Backup Cam"],status:"skip",reviewed:true,budget:true,note:"🚨 Carfax showed ECM/Computer replaced Feb 2026. Skip unless dealer explains clearly."},
+  {id:4,brand:"Honda",year:2017,model:"Accord Sport",sticker:21934,km:64818,accident:"~$3K",drive:"FWD",risk:"low",location:"Waterloo Honda",tags:["Sunroof","Low KM","2.4L Engine"],status:"check",reviewed:false,budget:true,note:"Very low km for a 2017 (~7k/yr). $3K accident — get full Carfax. Could be great if minor."},
+  {id:5,brand:"Honda",year:2016,model:"Accord LX",sticker:16999,km:116854,accident:"~$4K",drive:"FWD",risk:"low",location:"Fitzgerald Motors",tags:["Honda Sensing","Budget Pick"],status:"check",reviewed:false,budget:true,note:"Cheapest option. $4K accident needs Carfax. Reliable 2.4L engine."},
+  {id:6,brand:"Honda",year:2016,model:"Accord Sport",sticker:19999,km:93319,accident:"~$4K",drive:"FWD",risk:"low",location:"Fitzgerald Motors",tags:["Sport Trim","Honda Sensing"],status:"check",reviewed:false,budget:true,note:"$4K accident — get full Carfax. 2.4L engine is solid. Worth checking if accident is minor."},
+  {id:7,brand:"Honda",year:2017,model:"Accord Sport",sticker:19590,km:107015,accident:"None",drive:"FWD",risk:"low",location:"Clutch",tags:["19 Service Records","Zero Accidents","2.4L Engine"],status:"good",reviewed:true,budget:true,note:"✅ Reviewed — 19 perfect records at Henley Honda. Best documented sedan found. Our top pick."},
+  {id:8,brand:"Honda",year:2019,model:"HR-V LX AWD",sticker:21992,km:79997,accident:"None",drive:"AWD",risk:"low",location:"Kitchener",tags:["AWD","Under 80k KM"],status:"check",reviewed:false,budget:true,note:"No Carfax reviewed yet. AWD + clean + reasonable km. Priority to get Carfax on this one."},
+  {id:9,brand:"Mazda",year:2022,model:"CX-30 GX AWD",sticker:23499,km:74957,accident:"Unknown",drive:"AWD",risk:"low",location:"Kieswetter Mazda",tags:["AWD","2022 Model","2.5L NA"],status:"check",reviewed:false,budget:false,note:"Slightly over $25k all-in (~$26,800). Accident unknown — get Carfax. 2022 CX-30 has been our #1 pick in this search."},
+  {id:10,brand:"Mazda",year:2023,model:"CX-5 GX AWD",sticker:23592,km:122508,accident:"None",drive:"AWD",risk:"low",location:"Guelph",tags:["AWD","2023 Model"],status:"skip",reviewed:false,budget:false,note:"122k km on a 3-year-old car = ~41k/yr average. Way too high. Over budget. Skip."},
+  {id:11,brand:"Toyota",year:2019,model:"Camry SE",sticker:20995,km:128218,accident:"Unknown",drive:"FWD",risk:"low",location:"Cambridge",tags:["2.5L Toyota Engine","Reliable"],status:"check",reviewed:false,budget:true,note:"High km (128k) but bulletproof 2.5L engine. Accident unknown. Get Carfax. Check fuel pump recall."},
+  {id:12,brand:"Subaru",year:2021,model:"Crosstrek AWD",sticker:20962,km:null,accident:"None",drive:"AWD",risk:"medium",location:"Guelph",tags:["AWD","2021 Model"],status:"check",reviewed:false,budget:true,note:"KM unknown — must confirm first. AWD is the main draw. Subaru CVT has long-term concerns."},
+];
+
+let currentFilter = 'all';
+
+function allIn(p){return'~$'+Math.round(p*1.13+200).toLocaleString();}
+function fmtKm(n){return n?n.toLocaleString()+' km':'Unknown';}
+
+function renderCars(filter){
+  const list = document.getElementById('car-list');
+  const filtered = cars.filter(c=>{
+    if(filter==='awd') return c.drive==='AWD';
+    if(filter==='budget') return c.budget;
+    if(filter==='good') return c.status==='good'||c.status==='check';
+    return true;
+  });
+  
+  list.innerHTML = filtered.map(car=>{
+    const bc = brandColors[car.brand];
+    const st = STATUS[car.status];
+    const accColor = car.accident==='None'?'#16a34a':car.accident==='Unknown'||car.accident==='Not stated'?'#d97706':'#dc2626';
+    return `<div class="car-card" style="border-left:4px solid ${bc}">
+      <div class="card-inner">
+        <div class="card-top">
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <span class="brand-name" style="color:${bc}">${car.brand}</span>
+              ${car.reviewed?'<span class="carfax-badge">CARFAX ✓</span>':''}
+            </div>
+            <div class="car-model">${car.year} ${car.model}</div>
+            <div class="car-location">${car.location}</div>
+          </div>
+          <span class="status-badge" style="background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="metric-label">Price</div><div class="metric-value">$${car.sticker.toLocaleString()}</div></div>
+          <div class="metric"><div class="metric-label">All-in</div><div class="metric-value">${allIn(car.sticker)}</div></div>
+          <div class="metric"><div class="metric-label">KM</div><div class="metric-value" style="font-size:10px">${fmtKm(car.km)}</div></div>
+          <div class="metric"><div class="metric-label">Accident</div><div class="metric-value" style="color:${accColor};font-size:${car.accident==='None'?12:10}px">${car.accident}</div></div>
+        </div>
+        <div class="tags">
+          <span class="tag ${car.drive==='AWD'?'tag-awd':'tag-fwd'}">${car.drive}</span>
+          <span class="tag ${car.risk==='low'?'tag-risk-low':'tag-risk-med'}">${car.risk==='low'?'LOW RISK':'MED RISK'}</span>
+          ${!car.budget?'<span class="tag tag-over">OVER BUDGET</span>':''}
+          ${car.tags.slice(0,2).map(t=>`<span class="tag tag-default">${t}</span>`).join('')}
+        </div>
+        <div class="card-note">${car.note}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterCars(f){
+  currentFilter = f;
+  ['all','budget','awd','good'].forEach(id=>{
+    document.getElementById('f-'+id).classList.remove('active');
+  });
+  document.getElementById('f-'+f).classList.add('active');
+  renderCars(f);
+}
+
+function showTab(t){
+  document.getElementById('section-cars').classList.toggle('hidden', t!=='cars');
+  document.getElementById('section-engines').classList.toggle('hidden', t!=='engines');
+  document.getElementById('tab-cars').classList.toggle('active', t==='cars');
+  document.getElementById('tab-engines').classList.toggle('active', t==='engines');
+}
+
+// Init
+const clean = cars.filter(c=>c.status==='good').length;
+const skip = cars.filter(c=>c.status==='skip').length;
+const reviewed = cars.filter(c=>c.reviewed).length;
+document.getElementById('stats').textContent = `${clean} reviewed clean · ${skip} to skip · ${reviewed} Carfax reviewed`;
+renderCars('all');
+</script>
+</body>
+</html>
