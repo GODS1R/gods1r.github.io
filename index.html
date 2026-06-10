@@ -39,6 +39,10 @@
   .tag-over { background: #fee2e2; color: #dc2626; font-weight: 700; }
   .tag-default { background: #f1f5f9; color: #475569; }
   .card-note { font-size: 11px; color: #475569; background: #f8fafc; border-radius: 8px; padding: 8px 10px; line-height: 1.5; }
+  .user-notes { width:100%; box-sizing:border-box; margin-top:8px; padding:8px 10px; font-size:11px; font-family:inherit; color:#1e293b; background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; resize:vertical; min-height:48px; line-height:1.5; outline:none; transition:border-color 0.15s; }
+  .user-notes:focus { border-color:#f59e0b; background:#fffef5; }
+  .user-notes::placeholder { color:#a3a3a3; }
+  .notes-label { font-size:10px; font-weight:700; color:#92400e; letter-spacing:0.5px; text-transform:uppercase; margin-top:10px; margin-bottom:3px; }
   .hidden { display: none; }
   .engine-section { padding: 12px; }
   .ranking-box { background: #0f172a; border-radius: 14px; padding: 16px; margin-bottom: 12px; color: white; }
@@ -266,6 +270,9 @@ const cars = [
 
 let currentFilter = 'all';
 
+function saveNote(id, val){ localStorage.setItem('note_'+id, val); }
+function getNoteText(id){ return localStorage.getItem('note_'+id) || ''; }
+
 function allIn(p){return'~$'+Math.round(p*1.13+200).toLocaleString();}
 function fmtKm(n){return n?n.toLocaleString()+' km':'Unknown';}
 
@@ -308,6 +315,8 @@ function renderCars(filter){
           ${car.tags.slice(0,2).map(t=>`<span class="tag tag-default">${t}</span>`).join('')}
         </div>
         <div class="card-note">${car.note}</div>
+        <div class="notes-label">My Notes</div>
+        <textarea class="user-notes" data-id="${car.id}" placeholder="Add your notes here… price negotiation, test drive impressions, questions to ask…" oninput="saveNote(${car.id},this.value)">${getNoteText(car.id)}</textarea>
         <a href="${car.link}" target="_blank" style="display:block;margin-top:10px;text-align:center;background:#0f172a;color:white;padding:9px 0;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">
           View Listing →
         </a>
